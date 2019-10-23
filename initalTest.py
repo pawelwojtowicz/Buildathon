@@ -5,6 +5,9 @@ import requests
 
 cap = cv2.VideoCapture(0)
 
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1096)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 800)
+
 cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -14,13 +17,30 @@ FACE_SHAPE = 0.45
 org = (10, 40)
 fontScale = 1
 
-URL = "http://127.0.0.1:8080"
+headers = {
+    'Content-Type': "application/json",
+    'User-Agent': "PostmanRuntime/7.18.0",
+    'Accept': "*/*",
+    'Cache-Control': "no-cache",
+    'Postman-Token': "3fea7bd8-7d6d-40ff-90e9-f472827a3996,cb4c6e7f-6b87-46e2-b073-303cfd5bc889",
+    'Host': "build-a-thon-rest-api.azurewebsites.net",
+    'Accept-Encoding': "gzip, deflate",
+    'Content-Length': "61",
+    'Cookie': "ARRAffinity=e26452b9ab4162bf874a7a557d2b3213793b954884fe2afaba6f881f8f5285d5",
+    'Connection': "keep-alive",
+    'cache-control': "no-cache"
+    }
+
+
+
+
+#URL = "http://127.0.0.1:8080"
 URL = "http://build-a-thon-rest-api.azurewebsites.net/api/Vehicles"
 
 sensorData =  {
-                "vehiclenumber": "1",
-                "coachnumber": "4",
-                "filledSeats" : "0"
+                "vehicleId": "1",
+                "coachNumber": "1",
+                "PersonCount" : "0"
               }
               
               
@@ -53,7 +73,7 @@ while(True):
     cv2.rectangle(imageGray, point1, point2, color, thickness)
     image = cv2.putText(imageGray,  str(len( filteredFaceRects) ), org, font, fontScale, color, thickness, cv2.LINE_AA)
     
-    sensorData["filledSeats"] = str(len(filteredFaceRects))
+    sensorData["PersonCount"] = str(len(filteredFaceRects))
     
 
     
@@ -61,11 +81,12 @@ while(True):
     
     if requestCounter > 50:
         requestCounter = 0
-        print(json.dumps( sensorData, sort_keys=True, indent=4 ) )
-        answer = requests.get(url = URL, params = sensorData, data = json.dumps(sensorData))
+        payload = json.dumps( sensorData, sort_keys=True ) #, indent=4 )
+        print( payload )
+        answer = requests.post(url = URL, params = sensorData, data = payload, headers = headers )
 
 
-        print( answer )
+        print( answer.text )
         
         
 
