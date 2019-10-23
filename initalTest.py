@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import json
+import requests
 
 cap = cv2.VideoCapture(0)
 
@@ -13,12 +14,17 @@ FACE_SHAPE = 0.45
 org = (10, 40)
 fontScale = 1
 
+URL = "http://127.0.0.1:8080"
+URL = "http://build-a-thon-rest-api.azurewebsites.net/api/Vehicles"
 
 sensorData =  {
-                "coachId": 1,
-                "capacity": 4,
-                "measurement" : 0
+                "vehiclenumber": "1",
+                "coachnumber": "4",
+                "filledSeats" : "0"
               }
+              
+              
+requestCounter = 0
 
 
 while(True):
@@ -47,9 +53,21 @@ while(True):
     cv2.rectangle(imageGray, point1, point2, color, thickness)
     image = cv2.putText(imageGray,  str(len( filteredFaceRects) ), org, font, fontScale, color, thickness, cv2.LINE_AA)
     
-    sensorData["measurement"] = len(filteredFaceRects)
+    sensorData["filledSeats"] = str(len(filteredFaceRects))
     
-    print(json.dumps( sensorData, sort_keys=True, indent=4 ) )
+
+    
+    requestCounter = requestCounter + 1
+    
+    if requestCounter > 50:
+        requestCounter = 0
+        print(json.dumps( sensorData, sort_keys=True, indent=4 ) )
+        answer = requests.get(url = URL, params = sensorData, data = json.dumps(sensorData))
+
+
+        print( answer )
+        
+        
 
     cv2.imshow('Frame',imageGray)
     
