@@ -5,8 +5,13 @@ import requests
 
 cap = cv2.VideoCapture(0)
 
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1096)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 800)
+imageWidth = 1096
+imageHeight = 800
+
+seats = 4
+
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, imageWidth)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, imageHeight)
 
 cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -17,6 +22,9 @@ FACE_SHAPE = 0.45
 #FACE_SHAPE = 0.5
 org = (10, 40)
 fontScale = 1
+
+imageWidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+seatWidth = int (imageWidth / seats )
 
 headers = {
     'Content-Type': "application/json",
@@ -41,7 +49,8 @@ URL = "http://build-a-thon-rest-api.azurewebsites.net/api/Vehicles"
 sensorData =  {
                 "vehicleId": "1",
                 "coachNumber": "1",
-                "PersonCount" : "0"
+                "PersonCount" : "0",
+                "seatOccupancy": []
               }
               
               
@@ -60,8 +69,11 @@ while(True):
 
     
     faceRect = cascade.detectMultiScale(imageGray, scaleFactor=1.1, minNeighbors=1, minSize=(100,100))
-      
     
+    seatOccupancy = []
+    for a in range(seats):
+        seatOccupancy.append(0)
+            
     filteredFaceRects = []
     
     for faceR in faceRect:
@@ -74,10 +86,24 @@ while(True):
         point1 = ( faceR[0] , faceR[1])
         point2 = ( faceR[0] + faceR[2] , faceR[1] + faceR[3] )
         cv2.rectangle(frame, point1, point2, color, thickness)
+        seatIndex = int(faceR[0]/seatWidth)
+        print("The ex" + str(faceR[0]) + "gives the seat" +str(seatIndex) )
+        seatOccupancy[seatIndex] = int(1)
         
+        
+   
     image = cv2.putText(frame,  str(len( filteredFaceRects) ), org, font, fontScale, color, thickness, cv2.LINE_AA)
     
+    
+    for i in range(seats):
+        
+        point1 = (int(((i+1)*imageWidth)/seats), 0 )
+        point2 = int(((i+1)*imageWidth)/seats) , imageHeight
+        cv2.line( frame, point1, point2, color, thickness)
+    
     sensorData["PersonCount"] = str(len(filteredFaceRects))
+    sensorData["seatOccupancy"] = seatOccupancy
+    
     
     
     
@@ -88,7 +114,6 @@ while(True):
         payload = json.dumps( sensorData, sort_keys=True ) #, indent=4 )
         print( payload )
         answer = requests.post(url = URL, params = sensorData, data = payload, headers = headers )
-
 
         print( answer.text )
         
