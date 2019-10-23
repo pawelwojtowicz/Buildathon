@@ -87,7 +87,6 @@ while(True):
         point2 = ( faceR[0] + faceR[2] , faceR[1] + faceR[3] )
         cv2.rectangle(frame, point1, point2, color, thickness)
         seatIndex = int(faceR[0]/seatWidth)
-        print("The ex" + str(faceR[0]) + "gives the seat" +str(seatIndex) )
         seatOccupancy[seatIndex] = int(1)
         
         
