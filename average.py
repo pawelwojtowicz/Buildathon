@@ -14,6 +14,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 thickness = 2
 color = (0, 0 , 0 )
 FACE_SHAPE = 0.45
+#FACE_SHAPE = 0.5
 org = (10, 40)
 fontScale = 1
 
@@ -46,6 +47,9 @@ sensorData =  {
               
 requestCounter = 0
 
+average  = 0;
+sum = 0;
+
 
 while(True):
     # Capture frame-by-frame
@@ -55,7 +59,7 @@ while(True):
     imageGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     
-    faceRect = cascade.detectMultiScale(imageGray, scaleFactor=1.1, minNeighbors=1, minSize=(1,1))
+    faceRect = cascade.detectMultiScale(imageGray, scaleFactor=1.1, minNeighbors=1, minSize=(100,100))
       
     
     filteredFaceRects = []
@@ -69,13 +73,13 @@ while(True):
     for faceR in filteredFaceRects:
         point1 = ( faceR[0] , faceR[1])
         point2 = ( faceR[0] + faceR[2] , faceR[1] + faceR[3] )
-    
-    cv2.rectangle(imageGray, point1, point2, color, thickness)
-    image = cv2.putText(imageGray,  str(len( filteredFaceRects) ), org, font, fontScale, color, thickness, cv2.LINE_AA)
+        cv2.rectangle(frame, point1, point2, color, thickness)
+        
+    image = cv2.putText(frame,  str(len( filteredFaceRects) ), org, font, fontScale, color, thickness, cv2.LINE_AA)
     
     sensorData["PersonCount"] = str(len(filteredFaceRects))
     
-
+    
     
     requestCounter = requestCounter + 1
     
@@ -90,7 +94,7 @@ while(True):
         
         
 
-    cv2.imshow('Frame',imageGray)
+    cv2.imshow('Frame',frame)
     
     
 #    cv2.imwrite('image.png', frame)
@@ -100,3 +104,5 @@ while(True):
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
+
+
